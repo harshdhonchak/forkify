@@ -1,0 +1,117 @@
+var _modelJs = require('./model.js');
+var _viewsRecipeViewJs = require('./views/recipeView.js');
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+var _viewsRecipeViewJsDefault = _parcelHelpers.interopDefault(_viewsRecipeViewJs);
+require('fractional');
+var _viewsResultsViewJs = require('./views/resultsView.js');
+var _viewsResultsViewJsDefault = _parcelHelpers.interopDefault(_viewsResultsViewJs);
+require('core-js/stable');
+require('regenerator-runtime/runtime');
+require('./helpers.js');
+require('regenerator-runtime/runtime');
+var _viewsSearchViewJs = require('./views/searchView.js');
+var _viewsSearchViewJsDefault = _parcelHelpers.interopDefault(_viewsSearchViewJs);
+var _viewsPaginationViewJs = require('./views/paginationView.js');
+var _viewsPaginationViewJsDefault = _parcelHelpers.interopDefault(_viewsPaginationViewJs);
+var _viewsBookmarksViewJs = require('./views/bookmarksView.js');
+var _viewsBookmarksViewJsDefault = _parcelHelpers.interopDefault(_viewsBookmarksViewJs);
+var _viewsAddRecipeViewJs = require('./views/addRecipeView.js');
+var _viewsAddRecipeViewJsDefault = _parcelHelpers.interopDefault(_viewsAddRecipeViewJs);
+var _configJs = require('./config.js');
+const recipeContainer = document.querySelector('.recipe');
+if (module.hot) {
+  module.hot.accpet;
+}
+// const timeout = function (s) {
+// return new Promise(function (_, reject) {
+// setTimeout(function () {
+// reject(new Error(`Request took too long! Timeout after ${s} second`));
+// }, s * 1000);
+// });
+// };
+// https://forkify-api.herokuapp.com/v2
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const controlRecipes = async function () {
+  try {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    _viewsRecipeViewJsDefault.default.renderSpinner();
+    // LOADING RECIPES
+    _viewsResultsViewJsDefault.default.update(_modelJs.getSearchResultPage());
+    _viewsBookmarksViewJsDefault.default.update(_modelJs.state.bookmarks);
+    await _modelJs.loadRecipe(id);
+    // RENDERING RECIPE
+    _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+  } catch (err) {
+    _viewsRecipeViewJsDefault.default.renderError();
+  }
+};
+const controlSearchResult = async function () {
+  try {
+    _viewsResultsViewJsDefault.default.renderSpinner();
+    const query = _viewsSearchViewJsDefault.default.getQuery();
+    if (!query) return;
+    await _modelJs.loadSearchResult(query);
+    _viewsSearchViewJsDefault.default.clear();
+    // console.log(model.state.search.results);
+    _viewsResultsViewJsDefault.default.render(_modelJs.getSearchResultPage(1));
+    _viewsPaginationViewJsDefault.default.render(_modelJs.state.search);
+  } catch (err) {
+    console.log(err);
+  }
+};
+const controlPagintion = function (goToPage) {
+  console.log(goToPage);
+  _viewsResultsViewJsDefault.default.render(_modelJs.getSearchResultPage(goToPage));
+  _viewsPaginationViewJsDefault.default.render(_modelJs.state.search);
+};
+const controlServings = function (newServings) {
+  _modelJs.updateServings(newServings);
+  // recipeView.render(model.state.recipe);
+  _viewsRecipeViewJsDefault.default.update(_modelJs.state.recipe);
+};
+const controlAddBookmark = function () {
+  if (!_modelJs.state.recipe.bookmarked) _modelJs.addBookmark(_modelJs.state.recipe); else {
+    _modelJs.deleteBookmark(_modelJs.state.recipe.id);
+  }
+  _viewsRecipeViewJsDefault.default.update(_modelJs.state.recipe);
+  // RENDER THE BOOKMARK
+  _viewsBookmarksViewJsDefault.default.render(_modelJs.state.bookmarks);
+};
+const controlBookmarks = function () {
+  _viewsBookmarksViewJsDefault.default.render(_modelJs.state.bookmarks);
+};
+const controlAddRecipe = async function (newRecipe) {
+  try {
+    // Show loading spinner
+    _viewsAddRecipeViewJsDefault.default.renderSpinner();
+    // Upload the new recipe data
+    await _modelJs.uploadRecipe(newRecipe);
+    console.log(_modelJs.state.recipe);
+    // Render recipe
+    _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+    // Success message
+    _viewsAddRecipeViewJsDefault.default.renderMessage();
+    // Render bookmark view
+    _viewsBookmarksViewJsDefault.default.render(_modelJs.state.bookmarks);
+    // Change ID in URL
+    window.history.pushState(null, '', `#${_modelJs.state.recipe.id}`);
+    // Close form window
+    setTimeout(function () {
+      _viewsAddRecipeViewJsDefault.default.toggleWindow();
+    }, _configJs.MODAL_CLOSE_SEC * 1000);
+  } catch (err) {
+    // console.error('💥', err);
+    _viewsAddRecipeViewJsDefault.default.renderError(err.message);
+  }
+};
+const init = function () {
+  _viewsBookmarksViewJsDefault.default.addHandlerRender(controlBookmarks);
+  _viewsRecipeViewJsDefault.default.addHandlerRender(controlRecipes);
+  _viewsRecipeViewJsDefault.default.addHandlerUpdateServings(controlServings);
+  _viewsSearchViewJsDefault.default.addHandlerSearch(controlSearchResult);
+  _viewsPaginationViewJsDefault.default.addHandlerClick(controlPagintion);
+  _viewsRecipeViewJsDefault.default.addHandlerAddBookmark(controlAddBookmark);
+  _viewsAddRecipeViewJsDefault.default.addHandlerUpload(controlAddRecipe);
+};
+init();

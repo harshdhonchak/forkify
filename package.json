@@ -1,0 +1,21 @@
+{
+  "name": "forkify",
+  "version": "1.0.0",
+  "description": "",
+  "default": "index.html",
+  "dependencies": {
+    "core-js": "^3.14.0",
+    "fractional": "^1.0.0",
+    "parcel": "^2.0.0-beta.2",
+    "regenerator-runtime": "^0.13.7"
+  },
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.0.0-beta.2"
+  },
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html --dist-dir ./dist"
+  },
+  "author": "Harsh Dhonchak",
+  "license": "ISC"
+}
